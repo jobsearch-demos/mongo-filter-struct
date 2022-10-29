@@ -1,5 +1,5 @@
 # Mongo Filter Structure
-![Test workflow](https://github.com/jobsearch-demos/mongo-filter-struct/actions/workflows/test.yaml/badge.svg)
+![Test workflow](https://github.com/jobsearch-demos/mongo-filter-struct/actions/workflows/test.yml/badge.svg)
 
 This is a simple filter that will scan the golang struct type and
 generate a **mongo query** based on the struct `fields`, their `tags` and
