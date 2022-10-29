@@ -18,3 +18,5 @@
 
 # Server binary (probably temp)
 bin/**
+
+.idea
