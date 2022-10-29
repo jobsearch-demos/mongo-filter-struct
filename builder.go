@@ -20,20 +20,50 @@ import (
 // To confirm to SRP, it delegates the responsibility of scanning struct fields to IScanner
 // and the responsibility of building bson.D from each field to IFilterField
 type IFilterBuilder interface {
+	// SetFields sets the list of fields for the filter.
 	SetFields(fields []IFilterField) IFilterBuilder
+
+	// AddFields adds a list of fields to the filter.
 	AddFields(fields []IFilterField) IFilterBuilder
+
+	// AddField adds a new field to the filter.
 	AddField(field IFilterField) IFilterBuilder
+
+	// GetFields returns a list of all fields.
 	GetFields() []IFilterField
+
+	// GetFieldByIndex returns a field by its index.
 	GetFieldByIndex(index int) IFilterField
+
+	// GetFieldsByName returns a list of fields if their names match the provided one.
 	GetFieldsByName(name string) []IFilterField
+
+	// RemoveField removes a field from the filter.
 	RemoveField(field IFilterField) IFilterBuilder
+
+	// RemoveFieldByIndex removes a field from the filter by its index.
 	RemoveFieldByIndex(index int) IFilterBuilder
+
+	// RemoveFieldByName removes a field from the filter by its name.
 	RemoveFieldByName(name string) IFilterBuilder
+
+	// MergeDuplicateFields merges duplicate fields into a single field
 	MergeDuplicateFields() IFilterBuilder
+
+	// Build is used to build bson filter for mongodb based on provided struct.
 	Build() IFilterBuilder
+
+	// Output returns the final bson.D object
 	Output() bson.D
 }
 
+// filterBuilder is the default implementation of IFilterBuilder
+// All the attributes are private and can only be accessed via the public methods.
+// The reason for this is to ensure that the filter is immutable and can only be modified
+// via the public methods, while the logic of adding/removing fields is delegated to the
+// IFilterField interface that includes the logic not related to the IFilterBuilder (SRP + DIP).
+// (e.g. checking the validity of the field name or its operator,
+// merging fields with each other, etc.)
 type filterBuilder struct {
 	fields             []IFilterField
 	output             bson.D
@@ -41,6 +71,7 @@ type filterBuilder struct {
 	modificationNeeded bool
 }
 
+// SetFields sets the list of fields for the filter.
 func (f *filterBuilder) SetFields(fields []IFilterField) IFilterBuilder {
 	f.fields = fields
 	return f
