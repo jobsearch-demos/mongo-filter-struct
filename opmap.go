@@ -2,7 +2,7 @@ package filterbuilder
 
 type IOperatorMap interface {
 	Get(name string) IOperator
-	Set(operator IOperator) IOperator
+	Set(name string, operator IOperator) IOperator
 	SetSource(source map[string]IOperator)
 }
 
@@ -11,18 +11,16 @@ type operatorMap struct {
 }
 
 func (o operatorMap) Get(name string) IOperator {
-	//TODO implement me
-	panic("implement me")
+	return o.source[name]
 }
 
-func (o operatorMap) Set(operator IOperator) IOperator {
-	//TODO implement me
-	panic("implement me")
+func (o operatorMap) Set(name string, operator IOperator) IOperator {
+	o.source[name] = operator
+	return operator
 }
 
 func (o operatorMap) SetSource(source map[string]IOperator) {
-	//TODO implement me
-	panic("implement me")
+	o.source = source
 }
 
 func NewOperatorMap() IOperatorMap {
