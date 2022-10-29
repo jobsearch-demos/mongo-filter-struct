@@ -24,7 +24,9 @@ import (
 // It is injected into the IFilterField as a dependency
 // to perform the join.
 type IJoinPolicy interface {
-	Join(right, left field.IFilterField) bson.D
+	Join(left, right field.IFilterField) bson.D
+	getLookup(left, right field.IFilterField) bson.M
+	getUnwind(left, right field.IFilterField) bson.M
 }
 
 // leftOuterJoinPolicy joins two fields (IFilterField) from different collections
@@ -33,11 +35,35 @@ type IJoinPolicy interface {
 // null is returned in the result set.)
 type leftOuterJoinPolicy struct {
 	method string
-	fields []field.IFilterField
+}
+
+func (j *leftOuterJoinPolicy) getLookup(right, left field.IFilterField) bson.M {
+	return bson.M{
+		"from":         right.GetCollection(),
+		"localField":   left.GetName(),
+		"foreignField": right.GetName(),
+		"as":           right.GetName(),
+	}
+}
+
+func (j *leftOuterJoinPolicy) getUnwind(right, left field.IFilterField) bson.M {
+	return bson.M{
+		"path":                       "$" + right.GetName(),
+		"preserveNullAndEmptyArrays": true,
+	}
 }
 
 func (j *leftOuterJoinPolicy) Join(right, left field.IFilterField) bson.D {
-	panic("implement me")
+	return bson.D{
+		{
+			Key:   "$lookup",
+			Value: j.getLookup(right, left),
+		},
+		{
+			Key:   "$unwind",
+			Value: j.getUnwind(right, left),
+		},
+	}
 }
 
 func NewLeftOuterJoinPolicy() IJoinPolicy {

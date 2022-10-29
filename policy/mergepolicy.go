@@ -32,7 +32,12 @@ type overrideMergePolicy struct {
 }
 
 func (m *overrideMergePolicy) Merge(left, right field.IFilterField) bson.D {
-	panic("implement me")
+	return bson.D{
+		{
+			Key:   left.GetName(),
+			Value: right.GetValue(),
+		},
+	}
 }
 
 func NewOverrideMergePolicy() IMergePolicy {
@@ -48,7 +53,12 @@ type andMergePolicy struct {
 }
 
 func (m *andMergePolicy) Merge(left, right field.IFilterField) bson.D {
-	panic("implement me")
+	return bson.D{
+		{
+			Key:   left.GetName(),
+			Value: bson.D{{Key: "$and", Value: right.Build().Output()}},
+		},
+	}
 }
 
 func NewAndMergePolicy() IMergePolicy {
@@ -64,11 +74,73 @@ type orMergePolicy struct {
 }
 
 func (m *orMergePolicy) Merge(left, right field.IFilterField) bson.D {
-	panic("implement me")
+	return bson.D{
+		{
+			Key:   left.GetName(),
+			Value: bson.D{{Key: "$or", Value: right.Build().Output()}},
+		},
+	}
 }
 
 func NewOrMergePolicy() IMergePolicy {
 	return &orMergePolicy{
 		method: "or",
+	}
+}
+
+type xorMergePolicy struct {
+	method string
+}
+
+func (m *xorMergePolicy) Merge(left, right field.IFilterField) bson.D {
+	return bson.D{
+		{
+			Key:   left.GetName(),
+			Value: bson.D{{Key: "$xor", Value: right.Build().Output()}},
+		},
+	}
+}
+
+func NewXorMergePolicy() IMergePolicy {
+	return &xorMergePolicy{
+		method: "xor",
+	}
+}
+
+type notMergePolicy struct {
+	method string
+}
+
+func (m *notMergePolicy) Merge(left, right field.IFilterField) bson.D {
+	return bson.D{
+		{
+			Key:   left.GetName(),
+			Value: bson.D{{Key: "$not", Value: right.Build().Output()}},
+		},
+	}
+}
+
+func NewNotMergePolicy() IMergePolicy {
+	return &notMergePolicy{
+		method: "not",
+	}
+}
+
+type norMergePolicy struct {
+	method string
+}
+
+func (m *norMergePolicy) Merge(left, right field.IFilterField) bson.D {
+	return bson.D{
+		{
+			Key:   left.GetName(),
+			Value: bson.D{{Key: "$nor", Value: right.Build().Output()}},
+		},
+	}
+}
+
+func NewNorMergePolicy() IMergePolicy {
+	return &norMergePolicy{
+		method: "nor",
 	}
 }
