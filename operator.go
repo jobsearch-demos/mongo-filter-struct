@@ -3,6 +3,9 @@ package filterbuilder
 import "reflect"
 
 type IOperator interface {
+	// IsCompatible returns true if the operator is compatible with the field type
+	// e.g. EQOperator.IsCompatible(reflect.String) returns true because
+	// you can compare two strings with == operator.
 	IsCompatible(fieldType reflect.Kind) bool
 }
 
