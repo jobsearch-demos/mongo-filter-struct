@@ -16,6 +16,13 @@ import "go.mongodb.org/mongo-driver/bson"
 // In case of field being duplicated, it merges them into a single bson.D object.
 type IFilterField interface {
 	Merge(field IFilterField) IFilterField
+	GetIndex() int
+	GetName() string
+	GetCollection() string
+	GetType() string
+	GetOperator() IOperator
+	GetLevel() int
+	GetValue() interface{}
 	Build() IFilterField
 	Output() bson.D
 }
@@ -24,35 +31,67 @@ type filterField struct {
 	collection string
 	fieldType  string
 	name       string
-	operator   string
 	value      interface{}
-	output     *bson.D
+	operator   IOperator
+	level      int
+	index      int
+	output     bson.D
+}
+
+func (f *filterField) GetName() string {
+	return f.name
+}
+
+func (f *filterField) GetCollection() string {
+	return f.collection
+}
+
+func (f *filterField) GetType() string {
+	return f.fieldType
+}
+
+func (f *filterField) GetOperator() IOperator {
+	return f.operator
+}
+
+func (f *filterField) GetLevel() int {
+	return f.level
+}
+
+func (f *filterField) GetValue() interface{} {
+	return f.value
+}
+
+func (f *filterField) GetIndex() int {
+	return f.index
 }
 
 // Merge merges two filter fields into a single one
-func (f filterField) Merge(field IFilterField) IFilterField {
-	//TODO implement me
+func (f *filterField) Merge(field IFilterField) IFilterField {
 	panic("implement me")
 }
 
 // Build builds a bson.D from a single filter field
-func (f filterField) Build() IFilterField {
+func (f *filterField) Build() IFilterField {
 	//TODO implement me
 	panic("implement me")
 }
 
 // Output returns the output of the filter field
-func (f filterField) Output() bson.D {
-	//TODO implement me
-	panic("implement me")
+func (f *filterField) Output() bson.D {
+	return f.output
 }
 
-func NewFilterField(collection string, name string, operator string, fieldType string, value interface{}) IFilterField {
+// NewFilterField creates a new filter field
+func NewFilterField(collection string, fieldType string, name string,
+	value interface{}, operator IOperator, level int, index int) IFilterField {
 	return &filterField{
 		collection: collection,
 		fieldType:  fieldType,
 		name:       name,
-		operator:   operator,
 		value:      value,
+		operator:   operator,
+		level:      level,
+		index:      index,
 	}
 }

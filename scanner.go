@@ -9,29 +9,47 @@
 
 package filterbuilder
 
+import "reflect"
+
 // IScanner is used to scan struct and find fields with tags
 // Also it is used to check against several rules e.g. is field compatible with operator
 // or is field a relation field
 // It is used to find field name, operator and value
 type IScanner interface {
-	IsCompatible(fieldType string, operator string) bool
+	// Validate runs the validations against the provided struct fields
+	validate(reflectionValue reflect.Value, reflectionType reflect.Type) bool
+
+	// MakeField creates a new filter field from provided struct field
+	makeField() IFilterField
+
+	// Scan scans the provided field and returns IFilterField after validation
+	Scan(filterStruct interface{}) []IFilterField
 }
 
 type scanner struct {
-	operatorMap     map[string]string
+	operatorMap     IOperatorMap
 	lookupTagName   string
 	operatorTagName string
 	relationTagName string
 }
 
-// IsCompatible checks if field is compatible with operator
-func (s scanner) IsCompatible(fieldType string, operator string) bool {
-	// TODO implement me
+func (s *scanner) Scan(fileterStruct interface{}) []IFilterField {
+	panic("implement me")
+}
+
+func (s *scanner) validate(reflectionValue reflect.Value, reflectionType reflect.Type) bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *scanner) makeField() IFilterField {
+	//TODO implement me
 	panic("implement me")
 }
 
 // NewScanner creates new scanner instance with provided options. Factory method.
-func NewScanner(operatorMap map[string]string, lookupTagName string, operatorTagName string, relationTagName string) IScanner {
+func NewScanner(operatorMap IOperatorMap, lookupTagName string,
+	operatorTagName string, relationTagName string) IScanner {
 	return &scanner{
 		operatorMap:     operatorMap,
 		lookupTagName:   lookupTagName,
