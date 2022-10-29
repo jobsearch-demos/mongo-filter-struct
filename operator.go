@@ -9,6 +9,8 @@ type IOperator interface {
 	IsCompatible(fieldType reflect.Kind) bool
 }
 
+// EQOperator is the equal operator (==)
+// Compatible types: string, int, int16, int32, int64, float32, float64, bool
 type EQOperator struct{}
 
 func (o EQOperator) IsCompatible(fieldType reflect.Kind) bool {
@@ -22,12 +24,16 @@ func (o EQOperator) IsCompatible(fieldType reflect.Kind) bool {
 		fieldType == reflect.Bool
 }
 
+// RegexOperator is the regex operator
+// Compatible types: string
 type RegexOperator struct{}
 
 func (o RegexOperator) IsCompatible(fieldType reflect.Kind) bool {
 	return fieldType == reflect.String
 }
 
+// LTOperator is the less than operator (<)
+// Compatible types: int, int16, int32, int64, float32, float64
 type LTOperator struct{}
 
 func (o LTOperator) IsCompatible(fieldType reflect.Kind) bool {
@@ -39,6 +45,8 @@ func (o LTOperator) IsCompatible(fieldType reflect.Kind) bool {
 		fieldType == reflect.Float32
 }
 
+// LTEOperator is the less than or equal operator (<=)
+// Compatible types: int, int16, int32, int64, float32, float64
 type LTEOperator struct{}
 
 func (o LTEOperator) IsCompatible(fieldType reflect.Kind) bool {
@@ -50,6 +58,8 @@ func (o LTEOperator) IsCompatible(fieldType reflect.Kind) bool {
 		fieldType == reflect.Float32
 }
 
+// GTOperator is the greater than operator (>)
+// Compatible types: int, int16, int32, int64, float32, float64
 type GTOperator struct{}
 
 func (o GTOperator) IsCompatible(fieldType reflect.Kind) bool {
@@ -61,6 +71,8 @@ func (o GTOperator) IsCompatible(fieldType reflect.Kind) bool {
 		fieldType == reflect.Float32
 }
 
+// GTEOperator is the greater than or equal operator (>=)
+// Compatible types: int, int16, int32, int64, float32, float64
 type GTEOperator struct{}
 
 func (o GTEOperator) IsCompatible(fieldType reflect.Kind) bool {
@@ -72,6 +84,8 @@ func (o GTEOperator) IsCompatible(fieldType reflect.Kind) bool {
 		fieldType == reflect.Float32
 }
 
+// NEOperator is the not equal operator (!=)
+// Compatible types: string, int, int16, int32, int64, float32, float64, bool
 type NEOperator struct{}
 
 func (o NEOperator) IsCompatible(fieldType reflect.Kind) bool {
@@ -85,12 +99,16 @@ func (o NEOperator) IsCompatible(fieldType reflect.Kind) bool {
 		fieldType == reflect.Bool
 }
 
+// INOperator is the in operator
+// Compatible types: slice
 type INOperator struct{}
 
 func (o INOperator) IsCompatible(fieldType reflect.Kind) bool {
 	return fieldType == reflect.Slice
 }
 
+// NINOperator is the not in operator
+// Compatible types: slice
 type NINOperator struct{}
 
 func (o NINOperator) IsCompatible(fieldType reflect.Kind) bool {
