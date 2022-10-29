@@ -1,6 +1,18 @@
-package filterbuilder
+// License: GNU General Public License v3.0
+// Author: Kamran Valijonov
+// Version: 1.0.0
+// Date: 2022-10-29
+// Description: Mongo Filter Builder
+// This tool is used to build bson filter for mongodb based on provided struct.
+// Motivation: I was tired of writing bson.M{} for every query and wanted
+// something more elegant and easy to use like django-filter.
 
-import "go.mongodb.org/mongo-driver/bson"
+package policy
+
+import (
+	"github.com/jobsearch-demos/mongo-filter-struct/field"
+	"go.mongodb.org/mongo-driver/bson"
+)
 
 // IJoinPolicy is used to build bson filter which
 // joins two fields (IFilterField) from different collections.
@@ -12,7 +24,7 @@ import "go.mongodb.org/mongo-driver/bson"
 // It is injected into the IFilterField as a dependency
 // to perform the join.
 type IJoinPolicy interface {
-	Join(right, left IFilterField) bson.D
+	Join(right, left field.IFilterField) bson.D
 }
 
 // leftOuterJoinPolicy joins two fields (IFilterField) from different collections
@@ -21,10 +33,10 @@ type IJoinPolicy interface {
 // null is returned in the result set.)
 type leftOuterJoinPolicy struct {
 	method string
-	fields []IFilterField
+	fields []field.IFilterField
 }
 
-func (j *leftOuterJoinPolicy) Join(right, left IFilterField) bson.D {
+func (j *leftOuterJoinPolicy) Join(right, left field.IFilterField) bson.D {
 	panic("implement me")
 }
 

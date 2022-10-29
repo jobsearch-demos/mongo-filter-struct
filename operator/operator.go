@@ -1,4 +1,13 @@
-package filterbuilder
+// License: GNU General Public License v3.0
+// Author: Kamran Valijonov
+// Version: 1.0.0
+// Date: 2022-10-29
+// Description: Mongo Filter Builder
+// This tool is used to build bson filter for mongodb based on provided struct.
+// Motivation: I was tired of writing bson.M{} for every query and wanted
+// something more elegant and easy to use like django-filter.
+
+package operator
 
 import "reflect"
 
@@ -44,6 +53,10 @@ func (o RegexOperator) ExternalName() string {
 // LTOperator is the less than operator (<)
 // Compatible types: int, int16, int32, int64, float32, float64
 type LTOperator struct{}
+
+func (o LTOperator) ExternalName() string {
+	return "lt"
+}
 
 func (o LTOperator) IsCompatible(fieldType reflect.Kind) bool {
 	return fieldType == reflect.Int ||
@@ -109,6 +122,10 @@ func (o GTEOperator) IsCompatible(fieldType reflect.Kind) bool {
 // Compatible types: string, int, int16, int32, int64, float32, float64, bool
 type NEOperator struct{}
 
+func (o NEOperator) ExternalName() string {
+	return "ne"
+}
+
 func (o NEOperator) IsCompatible(fieldType reflect.Kind) bool {
 	return fieldType == reflect.String ||
 		fieldType == reflect.Int ||
@@ -124,6 +141,10 @@ func (o NEOperator) IsCompatible(fieldType reflect.Kind) bool {
 // Compatible types: slice
 type INOperator struct{}
 
+func (o INOperator) ExternalName() string {
+	return "in"
+}
+
 func (o INOperator) IsCompatible(fieldType reflect.Kind) bool {
 	return fieldType == reflect.Slice
 }
@@ -131,6 +152,10 @@ func (o INOperator) IsCompatible(fieldType reflect.Kind) bool {
 // NINOperator is the not in operator
 // Compatible types: slice
 type NINOperator struct{}
+
+func (o NINOperator) ExternalName() string {
+	return "nin"
+}
 
 func (o NINOperator) IsCompatible(fieldType reflect.Kind) bool {
 	return fieldType == reflect.Slice

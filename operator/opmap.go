@@ -1,4 +1,13 @@
-package filterbuilder
+// License: GNU General Public License v3.0
+// Author: Kamran Valijonov
+// Version: 1.0.0
+// Date: 2022-10-29
+// Description: Mongo Filter Builder
+// This tool is used to build bson filter for mongodb based on provided struct.
+// Motivation: I was tired of writing bson.M{} for every query and wanted
+// something more elegant and easy to use like django-filter.
+
+package operator
 
 type IOperatorMap interface {
 	Get(name string) IOperator

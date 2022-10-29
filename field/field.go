@@ -1,4 +1,4 @@
-// License: MIT
+// License: GNU General Public License v3.0
 // Author: Kamran Valijonov
 // Version: 1.0.0
 // Date: 2022-10-29
@@ -7,9 +7,12 @@
 // Motivation: I was tired of writing bson.M{} for every query and wanted
 // something more elegant and easy to use like django-filter.
 
-package filterbuilder
+package field
 
-import "go.mongodb.org/mongo-driver/bson"
+import (
+	"github.com/jobsearch-demos/mongo-filter-struct/operator"
+	"go.mongodb.org/mongo-driver/bson"
+)
 
 // IFilterField is used to build bson filter for mongodb based on provided struct.
 // Its main responsibility is to construct a proper bson.D from a provided single struct field.
@@ -20,7 +23,7 @@ type IFilterField interface {
 	GetName() string
 	GetCollection() string
 	GetType() string
-	GetOperator() IOperator
+	GetOperator() operator.IOperator
 	GetLevel() int
 	GetValue() interface{}
 	Build() IFilterField
@@ -32,7 +35,7 @@ type filterField struct {
 	fieldType  string
 	name       string
 	value      interface{}
-	operator   IOperator
+	operator   operator.IOperator
 	level      int
 	index      int
 	output     bson.D
@@ -50,7 +53,7 @@ func (f *filterField) GetType() string {
 	return f.fieldType
 }
 
-func (f *filterField) GetOperator() IOperator {
+func (f *filterField) GetOperator() operator.IOperator {
 	return f.operator
 }
 
@@ -84,7 +87,7 @@ func (f *filterField) Output() bson.D {
 
 // NewFilterField creates a new filter field
 func NewFilterField(collection string, fieldType string, name string,
-	value interface{}, operator IOperator, level int, index int) IFilterField {
+	value interface{}, operator operator.IOperator, level int, index int) IFilterField {
 	return &filterField{
 		collection: collection,
 		fieldType:  fieldType,

@@ -1,4 +1,4 @@
-// License: MIT
+// License: GNU General Public License v3.0
 // Author: Kamran Valijonov
 // Version: 1.0.0
 // Date: 2022-10-29
@@ -7,9 +7,10 @@
 // Motivation: I was tired of writing bson.M{} for every query and wanted
 // something more elegant and easy to use like django-filter.
 
-package filterbuilder
+package builder
 
 import (
+	"github.com/jobsearch-demos/mongo-filter-struct/field"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -21,25 +22,25 @@ import (
 // and the responsibility of building bson.D from each field to IFilterField
 type IFilterBuilder interface {
 	// SetFields sets the list of fields for the filter.
-	SetFields(fields []IFilterField) IFilterBuilder
+	SetFields(fields []field.IFilterField) IFilterBuilder
 
 	// AddFields adds a list of fields to the filter.
-	AddFields(fields []IFilterField) IFilterBuilder
+	AddFields(fields []field.IFilterField) IFilterBuilder
 
 	// AddField adds a new field to the filter.
-	AddField(field IFilterField) IFilterBuilder
+	AddField(field field.IFilterField) IFilterBuilder
 
 	// GetFields returns a list of all fields.
-	GetFields() []IFilterField
+	GetFields() []field.IFilterField
 
 	// GetFieldByIndex returns a field by its index.
-	GetFieldByIndex(index int) IFilterField
+	GetFieldByIndex(index int) field.IFilterField
 
 	// GetFieldsByName returns a list of fields if their names match the provided one.
-	GetFieldsByName(name string) []IFilterField
+	GetFieldsByName(name string) []field.IFilterField
 
 	// RemoveField removes a field from the filter.
-	RemoveField(field IFilterField) IFilterBuilder
+	RemoveField(field field.IFilterField) IFilterBuilder
 
 	// RemoveFieldByIndex removes a field from the filter by its index.
 	RemoveFieldByIndex(index int) IFilterBuilder
@@ -65,14 +66,14 @@ type IFilterBuilder interface {
 // (e.g. checking the validity of the field name or its operator,
 // merging fields with each other, etc.)
 type filterBuilder struct {
-	fields             []IFilterField
+	fields             []field.IFilterField
 	output             bson.D
 	input              interface{}
 	modificationNeeded bool
 }
 
 // SetFields sets the list of fields for the filter.
-func (f *filterBuilder) SetFields(fields []IFilterField) IFilterBuilder {
+func (f *filterBuilder) SetFields(fields []field.IFilterField) IFilterBuilder {
 	f.fields = fields
 	return f
 }
@@ -84,19 +85,19 @@ func (f *filterBuilder) Build() IFilterBuilder {
 }
 
 // AddField adds a new field to the filter.
-func (f *filterBuilder) AddField(field IFilterField) IFilterBuilder {
+func (f *filterBuilder) AddField(field field.IFilterField) IFilterBuilder {
 	f.fields = append(f.fields, field)
 	return f
 }
 
 // AddFields adds a list of fields to the filter.
-func (f *filterBuilder) AddFields(fields []IFilterField) IFilterBuilder {
+func (f *filterBuilder) AddFields(fields []field.IFilterField) IFilterBuilder {
 	f.fields = append(f.fields, fields...)
 	return f
 }
 
 // RemoveField removes a field from the filter.
-func (f *filterBuilder) RemoveField(field IFilterField) IFilterBuilder {
+func (f *filterBuilder) RemoveField(field field.IFilterField) IFilterBuilder {
 	f.fields = append(f.fields[:field.GetIndex()], f.fields[field.GetIndex()+1:]...)
 	return f
 }
@@ -118,8 +119,8 @@ func (f *filterBuilder) RemoveFieldByIndex(index int) IFilterBuilder {
 }
 
 // GetFieldsByName returns a list of fields if their names match the provided one.
-func (f *filterBuilder) GetFieldsByName(name string) []IFilterField {
-	var fields []IFilterField
+func (f *filterBuilder) GetFieldsByName(name string) []field.IFilterField {
+	var fields []field.IFilterField
 	for _, field := range f.fields {
 		if field.GetName() == name {
 			fields = append(fields, field)
@@ -129,12 +130,12 @@ func (f *filterBuilder) GetFieldsByName(name string) []IFilterField {
 }
 
 // GetFieldByIndex returns a field by its index.
-func (f *filterBuilder) GetFieldByIndex(index int) IFilterField {
+func (f *filterBuilder) GetFieldByIndex(index int) field.IFilterField {
 	return f.fields[index]
 }
 
 // GetFields returns a list of all fields.
-func (f *filterBuilder) GetFields() []IFilterField {
+func (f *filterBuilder) GetFields() []field.IFilterField {
 	return f.fields
 }
 
@@ -159,7 +160,7 @@ func (f *filterBuilder) Output() bson.D {
 // NewFilterBuilder creates a new instance of IFilterBuilder
 func NewFilterBuilder() IFilterBuilder {
 	return &filterBuilder{
-		fields:             []IFilterField{},
+		fields:             []field.IFilterField{},
 		output:             bson.D{},
 		modificationNeeded: false,
 	}
