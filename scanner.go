@@ -26,7 +26,7 @@ type scanner struct {
 
 // IsCompatible checks if field is compatible with operator
 func (s scanner) IsCompatible(fieldType string, operator string) bool {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
