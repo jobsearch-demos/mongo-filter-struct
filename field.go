@@ -11,40 +11,48 @@ package filterbuilder
 
 import "go.mongodb.org/mongo-driver/bson"
 
+// IFilterField is used to build bson filter for mongodb based on provided struct.
+// Its main responsibility is to construct a proper bson.D from a provided single struct field.
+// In case of field being duplicated, it merges them into a single bson.D object.
 type IFilterField interface {
-	Validate() error
 	Merge(field IFilterField) IFilterField
-	Build() bson.D
+	Build() IFilterField
+	Output() bson.D
 }
 
 type filterField struct {
-	Collection string
-	Type       string
-	Name       string
-	Operator   string
-	Value      interface{}
+	collection string
+	fieldType  string
+	name       string
+	operator   string
+	value      interface{}
+	output     *bson.D
 }
 
-func (f filterField) Validate() error {
-	//TODO implement me
-	panic("implement me")
-}
-
+// Merge merges two filter fields into a single one
 func (f filterField) Merge(field IFilterField) IFilterField {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (f filterField) Build() bson.D {
+// Build builds a bson.D from a single filter field
+func (f filterField) Build() IFilterField {
 	//TODO implement me
 	panic("implement me")
 }
 
-func NewFilterField(collection string, name string, operator string, value interface{}) IFilterField {
+// Output returns the output of the filter field
+func (f filterField) Output() bson.D {
+	//TODO implement me
+	panic("implement me")
+}
+
+func NewFilterField(collection string, name string, operator string, fieldType string, value interface{}) IFilterField {
 	return &filterField{
-		Collection: collection,
-		Name:       name,
-		Operator:   operator,
-		Value:      value,
+		collection: collection,
+		fieldType:  fieldType,
+		name:       name,
+		operator:   operator,
+		value:      value,
 	}
 }
