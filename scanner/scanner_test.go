@@ -198,7 +198,7 @@ func TestScanner_Scan(t *testing.T) {
 			wantErr: false,
 			want: []field.IFilterField{
 				field.NewFilterField("",
-					reflect.Float32.String(),
+					reflect.Float64.String(),
 					"age", *floatPointer,
 					operator.EQOperator{}, 0),
 			},
@@ -211,7 +211,7 @@ func TestScanner_Scan(t *testing.T) {
 			wantErr: false,
 			want: []field.IFilterField{
 				field.NewFilterField("",
-					reflect.Float32.String(),
+					reflect.Float64.String(),
 					"age", float,
 					operator.EQOperator{}, 0),
 			},
@@ -572,13 +572,19 @@ func TestScanner_Scan(t *testing.T) {
 			},
 		},
 	}
-	validators := []validator.IValidator{
-		validator.NewOperatorValidator(operator.NewOperatorMap(), "operator")}
+	// create validators
+	opValidator := validator.NewOperatorValidator(operator.NewOperatorMap(), "operator")
+
+	// gather all validators in one slice
+	validators := []validator.IValidator{opValidator}
+
+	// create a new scanner
+	scan := NewScanner(operator.NewOperatorMap(), validators,
+		"filter", "operator", "join")
+
 	for _, tt := range tests {
-		scan := NewScanner(operator.NewOperatorMap(), validators,
-			"filter", "operator", "join")
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := scan.Scan(tt.strct)
+			got, err := scan.Scan(tt.strct, "", nil, 0)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Scan() error = %v, wantErr %v", err, tt.wantErr)
 				return

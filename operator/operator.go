@@ -29,9 +29,15 @@ func (o EQOperator) IsCompatible(fieldType reflect.Kind) bool {
 		fieldType == reflect.Int16 ||
 		fieldType == reflect.Int32 ||
 		fieldType == reflect.Int64 ||
+		fieldType == reflect.Uint ||
+		fieldType == reflect.Uint16 ||
+		fieldType == reflect.Uint32 ||
+		fieldType == reflect.Uint64 ||
 		fieldType == reflect.Float32 ||
 		fieldType == reflect.Float64 ||
-		fieldType == reflect.Bool
+		fieldType == reflect.Bool ||
+		fieldType == reflect.Slice ||
+		fieldType == reflect.Array
 }
 
 func (o EQOperator) ExternalName() string {

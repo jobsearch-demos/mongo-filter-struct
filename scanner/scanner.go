@@ -25,10 +25,11 @@ type IScanner interface {
 	// makeField creates a new filter field from provided struct field
 	makeField(reflectionValue reflect.Value,
 		reflectionType reflect.StructField,
-		index int) (field.IFilterField, error)
+		parentField *reflect.StructField, index int) (field.IFilterField, error)
 
 	// Scan scans the provided field and returns a list of IFilterField
-	Scan(filterStruct interface{}) ([]field.IFilterField, error)
+	Scan(filterStruct interface{}, collection string,
+		parentField *reflect.StructField, index int) ([]field.IFilterField, error)
 }
 
 type scanner struct {
@@ -42,7 +43,8 @@ type scanner struct {
 // Scan scans the provided field and returns a list of IFilterField
 // It does not do anything other than scanning the struct and creating a list of IFilterField
 // It is responsible for checking the type of the fields and creating respective IFilterField.
-func (s *scanner) Scan(filterStruct interface{}) ([]field.IFilterField, error) {
+func (s *scanner) Scan(filterStruct interface{},
+	collection string, parentField *reflect.StructField, index int) ([]field.IFilterField, error) {
 	// prepare the list of fields to return
 	var filterFields []field.IFilterField
 
@@ -74,15 +76,19 @@ func (s *scanner) Scan(filterStruct interface{}) ([]field.IFilterField, error) {
 
 		// if the field is a struct, recursively call Scan
 		if fieldValue.Kind() == reflect.Struct {
-			fields, err := s.Scan(fieldValue.Interface())
+			fields, err := s.Scan(fieldValue.Interface(), collection, &fieldType, index)
 			if err != nil {
 				return nil, err
 			}
 			filterFields = append(filterFields, fields...)
+
+			// increment the index by the number of nested fields
+			index += len(fields)
+			continue
 		}
 
 		// create a new filter field
-		fields, err := s.makeField(fieldValue, fieldType, i)
+		fields, err := s.makeField(fieldValue, fieldType, parentField, index)
 
 		// if field could not be created, return error (validation error or unsupported field type)
 		if err != nil {
@@ -91,6 +97,9 @@ func (s *scanner) Scan(filterStruct interface{}) ([]field.IFilterField, error) {
 
 		// append the field to the list of fields
 		filterFields = append(filterFields, fields)
+
+		// increment the index
+		index++
 	}
 	return filterFields, nil
 }
@@ -103,11 +112,22 @@ func (s *scanner) Scan(filterStruct interface{}) ([]field.IFilterField, error) {
 // or if the operator tag provided is not supported (does not exist in opmap),
 // it returns error
 func (s *scanner) makeField(reflectionValue reflect.Value,
-	reflectionType reflect.StructField, index int) (field.IFilterField, error) {
+	reflectionType reflect.StructField, parentField *reflect.StructField, index int) (field.IFilterField, error) {
 	// get the tag value of the field
 	lookupTagValue := reflectionType.Tag.Get(s.lookupTagName)
 	collectionTagValue := reflectionType.Tag.Get(s.relationTagName)
 	operatorTagValue := reflectionType.Tag.Get(s.operatorTagName)
+
+	// if there is a parent field,
+	// combine the parent field name and the current field name
+	// to get the lookup value
+	if parentField != nil {
+		if parentLookupName := parentField.Tag.Get(s.lookupTagName); parentLookupName != "" {
+			lookupTagValue = parentLookupName + "." + lookupTagValue
+		} else {
+			lookupTagValue = parentField.Name + "." + lookupTagValue
+		}
+	}
 
 	// get operator from operator map
 	op := s.operatorMap.Get(operatorTagValue)
