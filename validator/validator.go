@@ -36,7 +36,8 @@ func (v *operatorValidator) Validate(reflectionValue reflect.Value,
 
 	// if operator is not compatible with the field, return error
 	if !op.IsCompatible(reflectionValue.Kind()) {
-		return errors.Errorf("operator %s is not compatible with field %s of type %s", operatorTagValue, reflectionType.Name, reflectionValue.Kind())
+		return errors.Errorf("operator %s is not compatible with field %s of type %s",
+			operatorTagValue, reflectionType.Name, reflectionValue.Kind())
 	}
 	return nil
 }

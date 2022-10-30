@@ -140,9 +140,12 @@ func (s *scanner) makeField(reflectionValue reflect.Value,
 }
 
 // NewScanner creates new scanner instance with provided options. Factory method.
-func NewScanner(operatorMap operator.IOperatorMap, lookupTagName string,
+func NewScanner(operatorMap operator.IOperatorMap,
+	validators []validator.IValidator,
+	lookupTagName string,
 	operatorTagName string, relationTagName string) IScanner {
 	return &scanner{
+		validators:      validators,
 		operatorMap:     operatorMap,
 		lookupTagName:   lookupTagName,
 		operatorTagName: operatorTagName,
