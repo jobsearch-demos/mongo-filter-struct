@@ -1,4 +1,5 @@
-# Mongo Filter Structure
+<img src="logo.png" width="100%" height="150"/>
+
 ![Test workflow](https://github.com/jobsearch-demos/mongo-filter-struct/actions/workflows/test.yml/badge.svg)
 
 This is a simple filter that will scan the golang struct type and
@@ -7,20 +8,20 @@ their `values`.
 
 ## Currently supported logic:
 
- - Zero Level (no nested structs) scan
- - Nested structs scan
- - JOINs from different collections (using $lookup)
- - Merge operations (merging the fields with the same name) with several logic operators (AND, OR, XOR, NOT)
- - Currently provided operators:
-   - $eq
-   - $ne
-   - $gt
-   - $gte
-   - $lt
-   - $lte
-   - $in
-   - $nin
-   - $regex
+- Zero Level (no nested structs) scan
+- Nested structs scan
+- JOINs from different collections (using $lookup)
+- Merge operations (merging the fields with the same name) with several logic operators (AND, OR, XOR, NOT)
+- Currently provided operators:
+    - $eq
+    - $ne
+    - $gt
+    - $gte
+    - $lt
+    - $lte
+    - $in
+    - $nin
+    - $regex
 
 ## Customization
 
