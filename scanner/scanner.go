@@ -23,12 +23,12 @@ import (
 // It is used to find field name, operator and value
 type IScanner interface {
 	// makeField creates a new filter field from provided struct field
-	makeField(reflectionValue reflect.Value,
+	makeField(collection string, reflectionValue reflect.Value,
 		reflectionType reflect.StructField,
 		parentField *reflect.StructField, index int) (field.IFilterField, error)
 
 	// Scan scans the provided field and returns a list of IFilterField
-	Scan(filterStruct interface{}, collection string,
+	Scan(filterStruct interface{},
 		parentField *reflect.StructField, index int) ([]field.IFilterField, error)
 }
 
@@ -44,7 +44,9 @@ type scanner struct {
 // It does not do anything other than scanning the struct and creating a list of IFilterField
 // It is responsible for checking the type of the fields and creating respective IFilterField.
 func (s *scanner) Scan(filterStruct interface{},
-	collection string, parentField *reflect.StructField, index int) ([]field.IFilterField, error) {
+	parentField *reflect.StructField, index int) ([]field.IFilterField, error) {
+	collection := ""
+
 	// prepare the list of fields to return
 	var filterFields []field.IFilterField
 
@@ -63,6 +65,14 @@ func (s *scanner) Scan(filterStruct interface{},
 		return nil, errors.Errorf("filterStruct has to be a struct")
 	}
 
+	// get collection name from the struct using CollectionName method
+	collectionGetter, exists := rt.MethodByName("CollectionName")
+
+	// if the struct has CollectionName method, get the collection name
+	if exists {
+		collection = collectionGetter.Func.Call([]reflect.Value{rv})[0].String()
+	}
+
 	// iterate over the fields of the provided struct
 	for i := 0; i < rv.NumField(); i++ {
 		// get the reflection value and type of the field
@@ -76,7 +86,7 @@ func (s *scanner) Scan(filterStruct interface{},
 
 		// if the field is a struct, recursively call Scan
 		if fieldValue.Kind() == reflect.Struct {
-			fields, err := s.Scan(fieldValue.Interface(), collection, &fieldType, index)
+			fields, err := s.Scan(fieldValue.Interface(), &fieldType, index)
 			if err != nil {
 				return nil, err
 			}
@@ -88,7 +98,7 @@ func (s *scanner) Scan(filterStruct interface{},
 		}
 
 		// create a new filter field
-		fields, err := s.makeField(fieldValue, fieldType, parentField, index)
+		fields, err := s.makeField(collection, fieldValue, fieldType, parentField, index)
 
 		// if field could not be created, return error (validation error or unsupported field type)
 		if err != nil {
@@ -111,12 +121,17 @@ func (s *scanner) Scan(filterStruct interface{},
 // or if operator tag value is empty, it returns error
 // or if the operator tag provided is not supported (does not exist in opmap),
 // it returns error
-func (s *scanner) makeField(reflectionValue reflect.Value,
+func (s *scanner) makeField(collection string, reflectionValue reflect.Value,
 	reflectionType reflect.StructField, parentField *reflect.StructField, index int) (field.IFilterField, error) {
 	// get the tag value of the field
 	lookupTagValue := reflectionType.Tag.Get(s.lookupTagName)
-	collectionTagValue := reflectionType.Tag.Get(s.relationTagName)
+	relationTagValue := reflectionType.Tag.Get(s.relationTagName)
 	operatorTagValue := reflectionType.Tag.Get(s.operatorTagName)
+
+	// if there is a relation tag, then the field is in another collection
+	if relationTagValue != "" {
+		collection = relationTagValue
+	}
 
 	// if there is a parent field,
 	// combine the parent field name and the current field name
@@ -149,7 +164,7 @@ func (s *scanner) makeField(reflectionValue reflect.Value,
 	}
 
 	filterField := field.NewFilterField(
-		collectionTagValue,
+		collection,
 		reflectionValue.Kind().String(),
 		lookupTagValue,
 		reflectionValue.Interface(),

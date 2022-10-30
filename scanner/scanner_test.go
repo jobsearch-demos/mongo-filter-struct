@@ -128,6 +128,14 @@ type TestStructWithNestedStruct struct {
 	User TestStructWithInt `json:"user" bson:"user" filter:"user" operator:"eq"`
 }
 
+type TestStructWithCollectionName struct {
+	Age int `json:"age" bson:"age" filter:"age" operator:"eq" collection:"users"`
+}
+
+func (t TestStructWithCollectionName) CollectionName() string {
+	return "users"
+}
+
 func TestScanner_Scan(t *testing.T) {
 	integer := 73
 	integerPointer := &integer
@@ -571,6 +579,19 @@ func TestScanner_Scan(t *testing.T) {
 					operator.EQOperator{}, 0),
 			},
 		},
+		{
+			name: "Scan struct with collection name",
+			strct: TestStructWithCollectionName{
+				Age: integer,
+			},
+			wantErr: false,
+			want: []field.IFilterField{
+				field.NewFilterField("users",
+					reflect.Int.String(),
+					"age", integer,
+					operator.EQOperator{}, 0),
+			},
+		},
 	}
 	// create validators
 	opValidator := validator.NewOperatorValidator(operator.NewOperatorMap(), "operator")
@@ -584,7 +605,7 @@ func TestScanner_Scan(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := scan.Scan(tt.strct, "", nil, 0)
+			got, err := scan.Scan(tt.strct, nil, 0)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Scan() error = %v, wantErr %v", err, tt.wantErr)
 				return
