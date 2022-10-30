@@ -146,7 +146,7 @@ func (o INOperator) ExternalName() string {
 }
 
 func (o INOperator) IsCompatible(fieldType reflect.Kind) bool {
-	return fieldType == reflect.Slice
+	return fieldType == reflect.Slice || fieldType == reflect.Array || fieldType == reflect.String
 }
 
 // NINOperator is the not in operator
@@ -158,5 +158,5 @@ func (o NINOperator) ExternalName() string {
 }
 
 func (o NINOperator) IsCompatible(fieldType reflect.Kind) bool {
-	return fieldType == reflect.Slice
+	return fieldType == reflect.Slice || fieldType == reflect.Array || fieldType == reflect.String
 }

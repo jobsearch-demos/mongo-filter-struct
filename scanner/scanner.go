@@ -12,6 +12,7 @@ package scanner
 import (
 	"github.com/jobsearch-demos/mongo-filter-struct/field"
 	"github.com/jobsearch-demos/mongo-filter-struct/operator"
+	"github.com/jobsearch-demos/mongo-filter-struct/validator"
 	"github.com/pkg/errors"
 	"reflect"
 )
@@ -21,25 +22,26 @@ import (
 // or is field a relation field
 // It is used to find field name, operator and value
 type IScanner interface {
-	// Validate runs the validations against the provided struct fields
-	validate(reflectionValue reflect.Value, reflectionType reflect.StructField) error
-
-	// MakeField creates a new filter field from provided struct field
+	// makeField creates a new filter field from provided struct field
 	makeField(reflectionValue reflect.Value,
-		reflectionType reflect.StructField) (field.IFilterField, error)
+		reflectionType reflect.StructField,
+		index int) (field.IFilterField, error)
 
-	// Scan scans the provided field and returns IFilterField after validation
+	// Scan scans the provided field and returns a list of IFilterField
 	Scan(filterStruct interface{}) ([]field.IFilterField, error)
 }
 
 type scanner struct {
 	operatorMap     operator.IOperatorMap
+	validators      []validator.IValidator
 	lookupTagName   string
 	operatorTagName string
 	relationTagName string
 }
 
-// Scan scans the provided field and returns a list of IFilterField after running the validations
+// Scan scans the provided field and returns a list of IFilterField
+// It does not do anything other than scanning the struct and creating a list of IFilterField
+// It is responsible for checking the type of the fields and creating respective IFilterField.
 func (s *scanner) Scan(filterStruct interface{}) ([]field.IFilterField, error) {
 	// prepare the list of fields to return
 	var filterFields []field.IFilterField
@@ -80,7 +82,7 @@ func (s *scanner) Scan(filterStruct interface{}) ([]field.IFilterField, error) {
 		}
 
 		// create a new filter field
-		fields, err := s.makeField(fieldValue, fieldType)
+		fields, err := s.makeField(fieldValue, fieldType, i)
 
 		// if field could not be created, return error (validation error or unsupported field type)
 		if err != nil {
@@ -93,54 +95,46 @@ func (s *scanner) Scan(filterStruct interface{}) ([]field.IFilterField, error) {
 	return filterFields, nil
 }
 
-func (s *scanner) validate(reflectionValue reflect.Value, reflectionType reflect.StructField) error {
-	// get operator tag value
+// makeField creates a new filter field from provided struct field
+// It does not validate the field, it only creates a new filter field
+// The only validation it does is validation against tag values correctness
+// e.g. if lookup tag value is empty, it takes the struct field name as the lookup
+// or if operator tag value is empty, it returns error
+// or if the operator tag provided is not supported (does not exist in opmap),
+// it returns error
+func (s *scanner) makeField(reflectionValue reflect.Value,
+	reflectionType reflect.StructField, index int) (field.IFilterField, error) {
+	// get the tag value of the field
+	lookupTagValue := reflectionType.Tag.Get(s.lookupTagName)
+	collectionTagValue := reflectionType.Tag.Get(s.relationTagName)
 	operatorTagValue := reflectionType.Tag.Get(s.operatorTagName)
-
-	// if operator tag value is empty, return error
-	if operatorTagValue == "" {
-		return errors.Errorf("operator tag value is empty")
-	}
 
 	// get operator from operator map
 	op := s.operatorMap.Get(operatorTagValue)
 
-	// if operator tag value is not in the operator map, return error
+	// if operator is not found, return error
 	if op == nil {
-		return errors.Errorf("operator %s is not supported", operatorTagValue)
+		return nil, errors.Errorf("operator %s is not supported", operatorTagValue)
 	}
-
-	// if operator is not compatible with the field, return error
-	if !op.IsCompatible(reflectionValue.Kind()) {
-		return errors.Errorf("operator %s is not compatible with field %s", operatorTagValue, reflectionType.Name)
-	}
-	return nil
-}
-
-func (s *scanner) makeField(reflectionValue reflect.Value, reflectionType reflect.StructField) (field.IFilterField, error) {
-	// validate the field
-	if err := s.validate(reflectionValue, reflectionType); err != nil {
-		return nil, errors.Errorf("field %s is not valid", reflectionType.Name)
-	}
-
-	// get the tag value of the field
-	lookupTagValue := reflectionType.Tag.Get(s.lookupTagName)
-	collectionTagValue := reflectionType.Tag.Get(s.relationTagName)
 
 	// if lookup tag value is empty, get the field name
 	if lookupTagValue == "" {
 		lookupTagValue = reflectionType.Name
 	}
 
-	// TODO: fix the logic here
+	for _, valid := range s.validators {
+		if err := valid.Validate(reflectionValue, reflectionType); err != nil {
+			return nil, err
+		}
+	}
+
 	filterField := field.NewFilterField(
 		collectionTagValue,
 		reflectionValue.Kind().String(),
-		reflectionType.Name,
+		lookupTagValue,
 		reflectionValue.Interface(),
-		nil,
-		0,
-		0,
+		op,
+		index,
 	)
 	return filterField, nil
 }

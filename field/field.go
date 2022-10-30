@@ -24,7 +24,6 @@ type IFilterField interface {
 	GetCollection() string
 	GetType() string
 	GetOperator() operator.IOperator
-	GetLevel() int
 	GetValue() interface{}
 	Build() IFilterField
 	Output() bson.D
@@ -36,7 +35,6 @@ type filterField struct {
 	name       string
 	value      interface{}
 	operator   operator.IOperator
-	level      int
 	index      int
 	output     bson.D
 }
@@ -55,10 +53,6 @@ func (f *filterField) GetType() string {
 
 func (f *filterField) GetOperator() operator.IOperator {
 	return f.operator
-}
-
-func (f *filterField) GetLevel() int {
-	return f.level
 }
 
 func (f *filterField) GetValue() interface{} {
@@ -87,14 +81,13 @@ func (f *filterField) Output() bson.D {
 
 // NewFilterField creates a new filter field
 func NewFilterField(collection string, fieldType string, name string,
-	value interface{}, operator operator.IOperator, level int, index int) IFilterField {
+	value interface{}, op operator.IOperator, index int) IFilterField {
 	return &filterField{
 		collection: collection,
 		fieldType:  fieldType,
 		name:       name,
 		value:      value,
-		operator:   operator,
-		level:      level,
+		operator:   op,
 		index:      index,
 	}
 }
