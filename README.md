@@ -1,4 +1,6 @@
-<img src="logo.png" width="100%" height="150"/>
+<p align="center">
+  <img src="logo.png" width="70%"/>
+</p>
 
 ![Test workflow](https://github.com/jobsearch-demos/mongo-filter-struct/actions/workflows/test.yml/badge.svg)
 
